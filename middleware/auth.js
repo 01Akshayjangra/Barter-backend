@@ -1,7 +1,15 @@
 const jwt = require("jsonwebtoken");
 const config = process.env;
+const cors = require("cors");
+const corsOptions = {
+  origin: "https://barter-one.vercel.app", // replace with your frontend domain
+  credentials: true, // enable cookies and credentials
+};
 
 const verifyToken = (req, res, next) => {
+  cors(corsOptions)(req, res, () => {});
+
+
   const token = req.cookies.authToken;
   if (!token) {
     return res.status(403).send("A token is required for authentication");

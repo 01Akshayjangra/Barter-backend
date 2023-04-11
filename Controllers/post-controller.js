@@ -2,9 +2,9 @@ const Post = require('../model/Post')
 
 const getUserPosts = async (req, res) => {
     try {
-      const userId = req.params.userId;
+      // const userId = req.params.userId;
       console.log(userId)
-      // const userId = '64315b8e68932a479176a776';
+      const userId = '64315b8e68932a479176a776';
       const posts = await Post.find({ userId }).exec(); // Fetch only posts for the given user ID
       res.json(posts);
     } catch (error) {
