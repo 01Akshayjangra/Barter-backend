@@ -2,7 +2,8 @@ const jwt = require("jsonwebtoken");
 const config = process.env;
 const cors = require("cors");
 const corsOptions = {
-  origin: "https://barter-one.vercel.app", // replace with your frontend domain
+  // origin: "https://barterr.vercel.app", // replace with your frontend domain
+  origin: "http://localhost:3000", // replace with your frontend domain
   credentials: true, // enable cookies and credentials
 };
 
