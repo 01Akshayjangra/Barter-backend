@@ -49,7 +49,7 @@ const loginUser = async (req, res) => {
         { user_id: user._id, email },
         process.env.SECRET_KEY,
         {
-          expiresIn: "2h",
+          expiresIn: "7h",
         }
       );
       user.token = token;
@@ -79,7 +79,7 @@ const logOut = async (req, res) => {
     req.session.destroy((err) => {
       if (err) {
         console.error(err);
-        res.status(500).send('Error logging out');
+        res.status(500).send('Error While logging out');
       } else {
         res.clearCookie('connect.sid', { path: '/' });
         res.status(200).send('Logged out');

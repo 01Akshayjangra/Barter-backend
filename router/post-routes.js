@@ -1,12 +1,10 @@
 const express = require('express');
 const {getAllPosts , createPost, getUserPosts} = require('../Controllers/post-controller')
 const router = express.Router();
+// const fetchuser = require('../middleware/fetchuser');
 
-// router.get('/post',getPost)
-// router.get('/posts/:postId', getPost);
-
-router.get('/posts/user/:userId', getUserPosts);
-router.get('/posts', getAllPosts);
+router.get('/post/user/:id', getUserPosts);
+router.get('/post', getAllPosts);
 router.post('/post',createPost)
 
 module.exports = router
