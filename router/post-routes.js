@@ -1,10 +1,14 @@
 const express = require('express');
+const verifyToken  = require('../middleware/auth')
 const {getAllPosts , createPost, getUserPosts} = require('../Controllers/post-controller')
 const router = express.Router();
 // const fetchuser = require('../middleware/fetchuser');
 
-router.get('/post/user/:id', getUserPosts);
+// router.get('/post',getPost)
+// router.get('/posts/:postId', getPost);
+
+router.get('/posts/user/',verifyToken, getUserPosts);
 router.get('/post', getAllPosts);
-router.post('/post',createPost)
+router.post('/post',verifyToken,createPost)
 
 module.exports = router
