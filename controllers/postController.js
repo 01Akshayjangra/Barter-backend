@@ -1,8 +1,10 @@
-const Post = require('../model/Post')
+const Post = require('../models/postModel')
+
 const getUserPosts = async (req, res) => {
     try {
       // const userId = req.params.userId;
       const userId = req.user.user_id;
+      // const userId = req.user._id;
       console.log(userId)
       const posts = await Post.find({ userId }); // Fetch only posts for the given user ID
       res.json(posts);
@@ -26,8 +28,8 @@ const getUserPosts = async (req, res) => {
 const createPost = async (req, res) => {
   try {
     const { title, image, tags, tools, category, avatar } = req.body;
-    const userId = req.user.user_id; // assuming user id is available in req object after authentication
-    // const userId = "6433d3743bfce802cdc44e46";
+    // const userId = req.user.user_id;
+    const userId = req.user._id;
     const hearts = 0;
     const views = 0;
     const shares = 0;
