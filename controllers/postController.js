@@ -3,10 +3,8 @@ const cloudinary = require('../utils/cloudinary');
 
 const getUserPosts = async (req, res) => {
   try {
-    // const userId = req.params.userId;
-    const userId = req.user.user_id;
-    // const userId = req.user._id;
-    console.log(userId)
+    const userId =  req.user._id;
+  
     const posts = await Post.find({ userId }); // Fetch only posts for the given user ID
     res.json(posts);
   } catch (error) {
@@ -27,9 +25,8 @@ const getAllPosts = async (req, res) => {
 }
 
 const createPost = async (req, res) => {
-  const { title, description, image, tags, tools, category, avatar, hearts, views, shares, userId } = req.body;
+  const { title, description, image, tags, tools, category, avatar, hearts, views, shares} = req.body;
   try {
-    const userId = req.user.user_id;
     const result = await cloudinary.uploader.upload(image, {
       folder: "allPosts",
     })
@@ -47,7 +44,7 @@ const createPost = async (req, res) => {
       avatar,
       views,
       shares,
-      userId: userId
+      userId: req.user._id
   });
   console.log(image.url)
   res.status(201).json({
