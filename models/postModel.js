@@ -5,10 +5,20 @@ const postSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    image: {
+    description: {
         type: String,
         required: true,
     },
+    image: {
+       public_id: {
+           type: String,
+           required: true
+       },
+       url: {
+           type: String,
+           required: true
+       }
+   },
     tags: {
         type: Array,
         default: []
@@ -31,5 +41,5 @@ const postSchema = new mongoose.Schema({
     }
 })
 
-const Post = mongoose.model('POST', postSchema);
+const Post = mongoose.model('Post', postSchema);
 module.exports = Post;
