@@ -1,10 +1,11 @@
 const Post = require('../models/postModel')
+const PostDelete  = require('../models/PostDelete')
 const cloudinary = require('../utils/cloudinary');
 
 const getUserPosts = async (req, res) => {
   try {
-    const userId =  req.user._id;
-  
+    const userId = req.user._id;
+
     const posts = await Post.find({ userId }); // Fetch only posts for the given user ID
     res.json(posts);
   } catch (error) {
@@ -15,17 +16,16 @@ const getUserPosts = async (req, res) => {
 
 const getAllPosts = async (req, res) => {
   try {
-
-    const posts = await Post.find({}).exec();
+    const posts = await Post.find();
     res.json(posts);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: error.message });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
   }
 }
 
 const createPost = async (req, res) => {
-  const { title, description, image, tags, tools, category, avatar, hearts, views, shares} = req.body;
+  const { title, description, image, tags, tools, category, avatar, hearts, views, shares } = req.body;
   try {
     const result = await cloudinary.uploader.upload(image, {
       folder: "allPosts",
@@ -34,8 +34,8 @@ const createPost = async (req, res) => {
       title,
       description,
       image: {
-          public_id: result.public_id,
-          url: result.secure_url
+        public_id: result.public_id,
+        url: result.secure_url
       },
       tags,
       tools,
@@ -45,9 +45,9 @@ const createPost = async (req, res) => {
       views,
       shares,
       userId: req.user._id
-  });
-  console.log(image.url)
-  res.status(201).json({
+    });
+    console.log(image.url)
+    res.status(201).json({
       success: true,
       post
     })
@@ -57,8 +57,94 @@ const createPost = async (req, res) => {
   }
 };
 
+const deletePost = async (req, res) => {
+  try {
+    const postId = req.body;
+    const userId = req.user.id;
+
+    // Check if the user has already deleted the post
+    const deletedPost = await PostDelete.findOne({ postId}, userId );
+    if (deletedPost) {
+      return res.status(400).json({ msg: 'Post already deleted by the user' });
+    }
+    console.log('here  is err')
+    // Check if the user is the owner of the post
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ msg: 'Post not found' });
+    }
+    if (post.userId.toString() !== userId) {
+      return res.status(401).json({ msg: 'Unauthorized' });
+    }
+
+    // Delete the post
+    await post.remove();
+
+    // Add the deleted post to the PostDelete collection
+    const postDelete = new PostDelete({ postId}, userId );
+    await postDelete.save();
+
+    res.json({ msg: 'Post deleted successfully' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+}
+
+// Like a post
+const likePost = async (req, res) => {
+  const { postId } = req.body;
+  try {
+    const post = await Post.findByIdAndUpdate(
+      postId,
+      { $inc: { hearts: 1 } },
+      { new: true }
+    );
+    res.json(post);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+}
+
+// Unlike a post
+const unlikePost = async (req, res) => {
+  const { postId } = req.body;
+  try {
+    const post = await Post.findByIdAndUpdate(
+      postId,
+      { $inc: { hearts: -1 } },
+      { new: true }
+    );
+    res.json(post);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+}
+
+// Share a post
+const sharePost = async (req, res) => {
+  const { postId } = req.body;
+  try {
+    const post = await Post.findByIdAndUpdate(
+      postId,
+      { $inc: { shares: 1 } },
+      { new: true }
+    );
+    res.json(post);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+}
+
 module.exports = {
   getAllPosts,
   getUserPosts,
   createPost,
+  likePost,
+  unlikePost,
+  sharePost,
+  deletePost
 };

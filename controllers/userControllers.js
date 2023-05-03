@@ -4,6 +4,7 @@ const User = require('../models/userModel')
 const Post = require('../models/postModel')
 const asyncHandler = require("express-async-handler");
 const generateToken = require("../config/generateToken");
+const cloudinary = require('../utils/cloudinary');
 
 
 //@description     Register new user 
@@ -73,17 +74,17 @@ const authUser = asyncHandler(async (req, res) => {
 });
 
 const userProfile = async (req, res) => {
- 
-    const user = await User.findOne( req.user._id);
 
-    if (user) {
-      res.json({
-        // _id: user._id,
-        name: user.name,
-        email: user.email,
-        pic: user.pic,
-        // token: generateToken(user._id),
-      })
+  const user = await User.findOne(req.user._id);
+
+  if (user) {
+    res.json({
+      // _id: user._id,
+      name: user.name,
+      email: user.email,
+      pic: user.pic,
+      // token: generateToken(user._id),
+    })
 
   } else {
     res.status(401);
@@ -97,20 +98,47 @@ const userProfile = async (req, res) => {
 const allUsers = asyncHandler(async (req, res) => {
 
   const keyword = req.query.search ? {
-        $or: [
-          { name: { $regex: req.query.search, $options: "i" } },
-          { email: { $regex: req.query.search, $options: "i" } },
-        ],
-      }
+    $or: [
+      { name: { $regex: req.query.search, $options: "i" } },
+      { email: { $regex: req.query.search, $options: "i" } },
+    ],
+  }
     : {};
 
   const users = await User.find(keyword).find({ _id: { $ne: req.user._id } });
   res.send(users);
 });
 
+// @desc    Add user to Group / Leave
+// @route   PUT /api/chat/groupadd
+// @access  Protected
+const profileImage = asyncHandler(async (req, res) => {
+  const { image } = req.body;
+  // const result = await cloudinary.uploader.upload(image, {
+  //   folder: "userAvatars",
+  // })
+  const user = await User.findByIdAndUpdate(
+    req.user._id,
+    {pic: image
+    //   pic: {
+    //     public_id: result.public_id,
+    //     url: result.secure_url
+    // },
+    })
+
+  if (!user) {
+    res.status(404);
+    throw new Error("Chat Not Found");
+  } else {
+    res.json(user);
+  }
+});
+
+
 module.exports = {
   registerUser,
   authUser,
   userProfile,
   allUsers,
+  profileImage
 };
