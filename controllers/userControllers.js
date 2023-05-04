@@ -119,11 +119,12 @@ const profileImage = asyncHandler(async (req, res) => {
   // })
   const user = await User.findByIdAndUpdate(
     req.user._id,
-    {pic: image
-    //   pic: {
-    //     public_id: result.public_id,
-    //     url: result.secure_url
-    // },
+    {
+      pic: image
+      //   pic: {
+      //     public_id: result.public_id,
+      //     url: result.secure_url
+      // },
     })
 
   if (!user) {
@@ -135,10 +136,66 @@ const profileImage = asyncHandler(async (req, res) => {
 });
 
 
+// Follow a user
+const followUser = async (req, res) => {
+  const userId = req.user._id; // get the ID of the logged in user
+  const { followUserId } = req.body; // get the ID of the user to follow
+
+  try {
+    // Add the followUserId to the followers array of the logged in user
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { $addToSet: { following: followUserId } },
+      { new: true }
+    );
+
+    // Add the logged in user's ID to the following array of the user being followed
+    const followUser = await User.findByIdAndUpdate(
+      followUserId,
+      { $addToSet: { followers: userId } },
+      { new: true }
+    );
+
+    res.status(200).json({ message: 'User followed successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error following user' });
+  }
+};
+
+// Unfollow a user
+const unFollowUser = async (req, res) => {
+  const userId = req.user._id; // get the ID of the logged in user
+  const { unfollowUserId } = req.body; // get the ID of the user to unfollow
+
+  try {
+    // Remove the unfollowUserId from the followers array of the logged in user
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { $pull: { following: unfollowUserId } },
+      { new: true }
+    );
+
+    // Remove the logged in user's ID from the following array of the user being unfollowed
+    const unfollowUser = await User.findByIdAndUpdate(
+      unfollowUserId,
+      { $pull: { followers: userId } },
+      { new: true }
+    );
+
+    res.status(200).json({ message: 'User unfollowed successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error unfollowing user' });
+  }
+};
+
 module.exports = {
   registerUser,
   authUser,
   userProfile,
   allUsers,
-  profileImage
+  profileImage,
+  followUser,
+  unFollowUser
 };
