@@ -31,7 +31,6 @@ const postSchema = new mongoose.Schema({
         type: Array,
         default: []
     },
-    avatar: { type: String },
     hearts: { type: Number, default: 0 },
     views: { type: Number, default: 0 },
     shares: { type: Number, default: 0 },
