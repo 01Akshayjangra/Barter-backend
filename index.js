@@ -1,5 +1,6 @@
 const express = require('express');
 const dotenv = require('dotenv');
+const cors = require('cors'); // import cors package
 
 const userRoutes = require("./routes/userRoutes");
 const postRoutes = require("./routes/postRoutes");
@@ -15,9 +16,12 @@ const path = require("path");
 dotenv.config({path:'./config.env'})
 require("./config/db");
 
+app.use(cors({
+    origin: 'http://localhost:3000'
+  }));
 app.use(express.json()); //to accept json data
 app.use(cookieParser());
-
+  
 app.use("/api/user", userRoutes);
 app.use("/api", postRoutes);
 app.use("/api/chat", chatRoutes);
