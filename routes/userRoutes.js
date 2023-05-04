@@ -7,8 +7,6 @@ router.route('/').post(registerUser).get(protect,allUsers).put(protect,profileIm
 router.post('/login',authUser);
 
 
-router.get('/info',protect,userProfile)
-
-
+router.get('/',protect,userProfile)
 
 module.exports = router
