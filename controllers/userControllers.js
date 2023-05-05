@@ -2,6 +2,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require('../models/userModel')
 const Post = require('../models/postModel')
+const About = require('../models/aboutModel')
 const asyncHandler = require("express-async-handler");
 const generateToken = require("../config/generateToken");
 const cloudinary = require('../utils/cloudinary');
@@ -83,6 +84,8 @@ const userProfile = async (req, res) => {
       name: user.name,
       email: user.email,
       pic: user.pic,
+      // followers,
+      // following,
       // token: generateToken(user._id),
     })
 
@@ -134,7 +137,6 @@ const profileImage = asyncHandler(async (req, res) => {
     res.json(user);
   }
 });
-
 
 // Follow a user
 const followUser = async (req, res) => {
@@ -190,6 +192,48 @@ const unFollowUser = async (req, res) => {
   }
 };
 
+const userAbout = async (req, res) => {
+  try {
+    const { firstname, lastname, occupation, company, country, city, title, description } = req.body;
+    const userId = req.user.id;
+
+    let about = await About.findOne({ userId });
+
+    if (!about) {
+      // create new about data
+      about = new About({
+        firstname,
+        lastname,
+        occupation,
+        company,
+        country,
+        city,
+        title,
+        description,
+        userId
+      });
+    } else {
+      // update existing about data
+      about.firstname = firstname;
+      about.lastname = lastname;
+      about.occupation = occupation;
+      about.company = company;
+      about.country = country;
+      about.city = city;
+      about.title = title;
+      about.description = description;
+    }
+
+    const savedAbout = await about.save();
+    res.json(savedAbout);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error saving About data' });
+  }
+
+
+};
+
 module.exports = {
   registerUser,
   authUser,
@@ -197,5 +241,6 @@ module.exports = {
   allUsers,
   profileImage,
   followUser,
-  unFollowUser
+  unFollowUser,
+  userAbout
 };
