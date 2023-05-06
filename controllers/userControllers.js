@@ -7,7 +7,6 @@ const asyncHandler = require("express-async-handler");
 const generateToken = require("../config/generateToken");
 const cloudinary = require('../utils/cloudinary');
 
-
 //@description     Register new user 
 //@route           POST /api/user/
 //@access          Public
@@ -230,8 +229,25 @@ const userAbout = async (req, res) => {
     console.error(error);
     res.status(500).json({ message: 'Error saving About data' });
   }
+};
 
+// Route to fetch user about data -- api/user/about
+const getUserAbout = async (req, res) => {
+  try {
+    const userId = req.user.id;
 
+    const aboutData = await About.findOne({ userId });
+
+    if (!aboutData) {
+      return res.status(404).json({ message: 'User about data not found' });
+    }
+
+    // Return the about data in the response
+    res.json(aboutData);
+  } catch (error) {
+    console.error('Error fetching user about data:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 };
 
 module.exports = {
@@ -242,5 +258,6 @@ module.exports = {
   profileImage,
   followUser,
   unFollowUser,
-  userAbout
+  userAbout,
+  getUserAbout
 };
