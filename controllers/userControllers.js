@@ -141,6 +141,7 @@ const profileImage = asyncHandler(async (req, res) => {
 
 // Follow a user
 const followUser = async (req, res) => {
+  console.log("gidi");
   const userId = req.user._id; // get the ID of the logged in user
   const { followUserId } = req.body; // get the ID of the user to follow
 
