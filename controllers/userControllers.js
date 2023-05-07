@@ -11,7 +11,7 @@ const cloudinary = require('../utils/cloudinary');
 //@route           POST /api/user/
 //@access          Public
 const registerUser = asyncHandler(async (req, res) => {
-  const { name, email, phone, password, pic } = req.body;
+  const { name, email, phone, password } = req.body;
 
   if (!name || !phone || !email || !password) {
     res.status(400);
@@ -30,7 +30,6 @@ const registerUser = asyncHandler(async (req, res) => {
     email: email.toLowerCase(),
     password,
     phone,
-    pic,
   });
 
   if (user) {
@@ -40,7 +39,7 @@ const registerUser = asyncHandler(async (req, res) => {
       email: user.email,
       phone: user.phone,
       isAdmin: user.isAdmin,
-      pic: user.pic,
+      pic,
       token: generateToken(user._id),
     });
   } else {
@@ -115,25 +114,28 @@ const allUsers = asyncHandler(async (req, res) => {
 // @route   PUT /api/chat/groupadd
 // @access  Protected
 const profileImage = asyncHandler(async (req, res) => {
-  const { image } = req.body;
-  // const result = await cloudinary.uploader.upload(image, {
-  //   folder: "userAvatars",
-  // })
-  const user = await User.findByIdAndUpdate(
-    req.user._id,
-    {
-      pic: image
-      //   pic: {
-      //     public_id: result.public_id,
-      //     url: result.secure_url
-      // },
+  const { pic } = req.body;
+  try {
+    const result = await cloudinary.uploader.upload(pic, {
+      folder: "userAvatars",
     })
+    console.log(result)
 
-  if (!user) {
-    res.status(404);
-    throw new Error("Chat Not Found");
-  } else {
-    res.json(user);
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        pic: {
+          public_id: result.public_id,
+          url: result.secure_url
+        }
+      })
+    res.status(201).json({
+      success: true,
+      user
+    })
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 
@@ -250,6 +252,24 @@ const getUserAbout = async (req, res) => {
   }
 };
 
+// Routes ------------- For user whose profile is viewed by someone
+
+const someonesProfile = async (req, res) => {
+  const {userId} = req.body; // Assuming the user ID is sent in the request body
+
+  const user = await User.findOne({_id: userId});
+
+  if (user) {
+    res.json({
+      name: user.name,
+      email: user.email,
+      pic: user.pic
+    });
+  } else {
+    res.status(404).json({ error: 'User not found' });
+  }
+};
+
 module.exports = {
   registerUser,
   authUser,
@@ -259,5 +279,6 @@ module.exports = {
   followUser,
   unFollowUser,
   userAbout,
-  getUserAbout
+  getUserAbout,
+  someonesProfile
 };

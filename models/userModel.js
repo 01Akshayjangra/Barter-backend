@@ -21,8 +21,16 @@ const userSchema = new mongoose.Schema({
         required: true 
     },
     pic: {
-        type: String,
-        default:"https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg",
+        public_id: {
+            type: String,
+            default:"",
+            required: true
+        },
+        url: {
+            type: String,
+            default:"https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg",
+            required: true
+        }
     },
     followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]

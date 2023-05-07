@@ -13,15 +13,6 @@ const getUserPosts = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-const getUserPostsNew = async (req, res) => {
-  try {
-    const posts = await Post.find().populate('userId', '-password');
-    return posts;
-  } catch (error) {
-    throw new Error(error);
-  }
-};
-
 
 const getAllPosts = async (req, res) => {
   try {
@@ -39,6 +30,7 @@ const getAllPosts = async (req, res) => {
   const createPost = async (req, res) => {
     const { title, description, image, tags, tools, category, avatar, hearts, views, shares } = req.body;
     try {
+      console.log(image)
       const result = await cloudinary.uploader.upload(image, {
         folder: "allPosts",
       })
@@ -118,7 +110,6 @@ const getAllPosts = async (req, res) => {
       res.status(500).send('Server error');
     }
   }
-
   // Unlike a post
   const unlikePost = async (req, res) => {
     const { postId } = req.body;
@@ -151,6 +142,54 @@ const getAllPosts = async (req, res) => {
     }
   }
 
+
+  //Someones ------------------ posts
+  // const getSomeonesUserPosts = async (req, res) => {
+  //   try {
+  //     const { userId } = req.body;
+  //     console.log({ 'userId._id': userId });
+  
+  //     const posts = await Post.find({ 'userId._id': userId }); // Fetch only posts for the given user ID
+  
+  //     if (posts.length === 0) {
+  //       console.log("No posts found");
+  //       return res.status(404).json({ message: "No posts found" });
+  //     }
+  
+  //     res.json(posts);
+  //   } catch (error) {
+  //     console.error(error);
+  //     res.status(500).json({ message: error.message });
+  //   }
+  // };
+  
+  
+const getSomeonesUserPosts = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const posts = await Post.find({userId}); // Fetch only posts for the given user ID
+    res.json(posts);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+// const postRecommendations = async (req, res) => {
+//   try {
+//     const postId = "6455f7c678845af3f5053cb5";
+
+//     // Call the recommendation service to get recommendations based on the post ID
+//     const recommendations = await `https://barter-api.onrender.com/recommend${postId}`;
+
+//     res.json(recommendations);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Internal Server Error' });
+//   }
+// };
+
   module.exports = {
     getAllPosts,
     getUserPosts,
@@ -159,5 +198,6 @@ const getAllPosts = async (req, res) => {
     unlikePost,
     sharePost,
     deletePost,
-    getUserPostsNew
+    getSomeonesUserPosts,
+    // postRecommendations
   };
