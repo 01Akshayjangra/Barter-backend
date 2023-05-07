@@ -143,11 +143,11 @@ const getAllPosts = async (req, res) => {
   }
 
 
+
   
 const getSomeonesUserPosts = async (req, res) => {
   try {
-    const { userId } = req.body;
-    console.log("From front-----",userId);
+    const userId  = req.body.id;
     const posts = await Post.find({userId}); // Fetch only posts for the given user ID
     res.json(posts);
   } catch (error) {
@@ -156,6 +156,18 @@ const getSomeonesUserPosts = async (req, res) => {
   }
 };
 
+const getRecommendations = (req,res)=>{
+  const postIds = req.body.ids;
+  Post.find({ _id: { $in: postIds } }).populate({
+    path: 'userId',
+    select: 'name email pic'
+  }) // find all posts where the _id field is in the postIds array
+  .then(posts => res.json(posts)) // return the fetched posts as a JSON response
+  .catch(error => {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' }); // return an error response if something went wrong
+  });
+}
 
   module.exports = {
     getAllPosts,
@@ -166,5 +178,6 @@ const getSomeonesUserPosts = async (req, res) => {
     sharePost,
     deletePost,
     getSomeonesUserPosts,
+    getRecommendations
     // postRecommendations
   };
