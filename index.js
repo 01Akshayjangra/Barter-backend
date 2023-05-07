@@ -28,7 +28,7 @@ require("./config/db");
 //     }
 // };
 
-// app.use(cors(corsOptions));
+// app.use(cors(corsOptions)); 
 app.use(express.json()); //to accept json data
 app.use(cookieParser());
 
