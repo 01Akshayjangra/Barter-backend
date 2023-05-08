@@ -15,18 +15,18 @@ const path = require("path");
 dotenv.config({ path: './config.env' })
 require("./config/db");
 
-const whitelist = ['https://barterr.vercel.app'];
-const corsOptions = {
-    origin: function (origin, callback) {
-        if (whitelist.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    }
-};
+// const whitelist = ['https://barterr.vercel.app'];
+// const corsOptions = {
+//     origin: function (origin, callback) {
+//         if (whitelist.indexOf(origin) !== -1) {
+//             callback(null, true);
+//         } else {
+//             callback(new Error('Not allowed by CORS'));
+//         }
+//     }
+// };
 
-app.use(cors(corsOptions)); 
+// app.use(cors(corsOptions)); 
 app.use(express.json()); //to accept json data
 app.use(cookieParser());
 
