@@ -12,7 +12,10 @@ const cloudinary = require('../utils/cloudinary');
 //@access          Public
 const registerUser = asyncHandler(async (req, res) => {
   const { name, email, phone, password } = req.body;
-
+console.log(name)
+console.log(email)
+console.log(phone)
+console.log(password)
   if (!name || !phone || !email || !password) {
     res.status(400);
     throw new Error("Please Enter all the Feilds");
@@ -39,9 +42,11 @@ const registerUser = asyncHandler(async (req, res) => {
       email: user.email,
       phone: user.phone,
       isAdmin: user.isAdmin,
-      pic,
+      pic: "https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg",
       token: generateToken(user._id),
-    });
+      followers: '0',
+      following: '0'
+        });
   } else {
     res.status(400);
     throw new Error("User not found");

@@ -9,6 +9,7 @@ const messageRoutes = require("./routes/messageRoutes");
 
 var cookieParser = require('cookie-parser');
 const app = express();
+// const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 
 const path = require("path");
 
@@ -16,6 +17,10 @@ dotenv.config({ path: './config.env' })
 require("./config/db");
 
 // const whitelist = ['https://barterr.vercel.app'];
+<<<<<<< HEAD
+=======
+// const whitelist = ['https://localhost:3000'];
+>>>>>>> 565af053f550e319a4334648d0d599b0486af128
 // const corsOptions = {
 //     origin: function (origin, callback) {
 //         if (whitelist.indexOf(origin) !== -1) {
@@ -26,7 +31,11 @@ require("./config/db");
 //     }
 // };
 
+<<<<<<< HEAD
 // app.use(cors(corsOptions)); 
+=======
+// app.use(cors(corsOptions));
+>>>>>>> 565af053f550e319a4334648d0d599b0486af128
 app.use(express.json()); //to accept json data
 app.use(cookieParser());
 

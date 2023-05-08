@@ -23,7 +23,7 @@ const userSchema = new mongoose.Schema({
     pic: {
         public_id: {
             type: String,
-            default:"",
+            default:"default",
             required: true
         },
         url: {
