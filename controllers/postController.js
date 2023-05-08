@@ -148,7 +148,10 @@ const getAllPosts = async (req, res) => {
 const getSomeonesUserPosts = async (req, res) => {
   try {
     const userId  = req.body.id;
-    const posts = await Post.find({userId}); // Fetch only posts for the given user ID
+    const posts = await Post.find({userId}).populate({
+      path: 'userId',
+      select: 'name email pic'
+    }); // Fetch only posts for the given user ID
     res.json(posts);
   } catch (error) {
     console.error(error);

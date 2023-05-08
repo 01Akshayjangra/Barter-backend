@@ -256,10 +256,10 @@ const getUserAbout = async (req, res) => {
 // Routes ------------- For user whose profile is viewed by someone
 
 const someonesProfile = async (req, res) => {
-  const {userId} = req.body; // Assuming the user ID is sent in the request body
-
+  // const {userId} = req.body; // Assuming the user ID is sent in the request body
+  const userId = req.query.userId;
   const user = await User.findOne({_id: userId});
-
+  console.log(userId);
   if (user) {
     res.json({
       name: user.name,
@@ -270,7 +270,20 @@ const someonesProfile = async (req, res) => {
     res.status(404).json({ error: 'User not found' });
   }
 };
-
+const anotherUser = async (req, res) => {
+  const userId = req.query.userId;
+  const user = await User.findOne({_id: userId});
+  console.log(userId);
+  if (user) {
+    res.json({
+      name: user.name,
+      email: user.email,
+      pic: user.pic
+    });
+  } else {
+    res.status(404).json({ error: 'User not found' });
+  }
+};
 module.exports = {
   registerUser,
   authUser,
@@ -281,5 +294,6 @@ module.exports = {
   unFollowUser,
   userAbout,
   getUserAbout,
-  someonesProfile
+  someonesProfile,
+  anotherUser
 };

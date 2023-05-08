@@ -1,5 +1,5 @@
 const express = require('express');
-const { authUser, registerUser, userProfile, allUsers, profileImage, followUser,unFollowUser, userAbout, getUserAbout, someonesProfile} = require('../controllers/userControllers');
+const { authUser, registerUser, userProfile, allUsers, profileImage, followUser,unFollowUser,anotherUser, userAbout, getUserAbout, someonesProfile} = require('../controllers/userControllers');
 const router = express.Router();
 const { protect } = require("../middleware/authMiddleware");
 
@@ -15,6 +15,7 @@ router.post('/about',protect,userAbout)
 router.get('/about',protect,getUserAbout)
 router.get('/someonesProfile',someonesProfile)
 
+router.get('/anotherUser',anotherUser)
 // router.post('/recommendations',postRecommendations)
 
 
