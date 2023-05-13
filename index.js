@@ -16,6 +16,7 @@ const path = require("path");
 dotenv.config({ path: './config.env' })
 require("./config/db");
 
+<<<<<<< HEAD
 // const whitelist = ['https://barterr.vercel.app'];
 // const whitelist = ['https://localhost:3000'];
 // const corsOptions = {
@@ -29,6 +30,13 @@ require("./config/db");
 // };
 
 // app.use(cors(corsOptions));
+=======
+const corsOptions = {
+    origin: '*'
+};
+
+app.use(cors(corsOptions));
+>>>>>>> 17bc730a8aebe074ff89433cee3f88e467300983
 app.use(express.json()); //to accept json data
 app.use(cookieParser());
 
