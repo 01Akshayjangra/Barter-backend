@@ -12,10 +12,6 @@ const userSchema = new mongoose.Schema({
         required: true,
         unique: true 
     },
-    phone:{
-        type: Number,
-        required: true 
-    },
     password:{
         type: String,
         required: true 
@@ -33,7 +29,11 @@ const userSchema = new mongoose.Schema({
         }
     },
     followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-    following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+    following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    // isEmailVerified: {
+    //     type: Boolean,
+    //     default: false,
+    //   },
 },{
     timestamps: true,
 }

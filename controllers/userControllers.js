@@ -3,20 +3,28 @@ const jwt = require("jsonwebtoken");
 const User = require('../models/userModel')
 const Post = require('../models/postModel')
 const About = require('../models/aboutModel')
+const EmailVerification = require("../models/EmailVerification")
 const asyncHandler = require("express-async-handler");
 const generateToken = require("../config/generateToken");
 const cloudinary = require('../utils/cloudinary');
+// const { v4: uuidv4 } = require("uuid");
+// const nodemailer = require("nodemailer");
 
-//@description     Register new user 
+// const transporter = nodemailer.createTransport({
+//   service: "Gmail", // Specify your email service provider
+//   auth: {
+//     user: "barter99888@gmail.com", // Enter your email address
+//     pass: "BarterGoogle@2002", // Enter your email password
+//   },
+// });
+
+//@description Register new user 
 //@route           POST /api/user/
 //@access          Public
 const registerUser = asyncHandler(async (req, res) => {
-  const { name, email, phone, password } = req.body;
-console.log(name)
-console.log(email)
-console.log(phone)
-console.log(password)
-  if (!name || !phone || !email || !password) {
+  const { name, email, password } = req.body;
+
+  if (!name || !email || !password) {
     res.status(400);
     throw new Error("Please Enter all the Feilds");
   }
@@ -28,25 +36,54 @@ console.log(password)
     throw new Error("User already exists");
   }
 
+  // Generate verification token
+  // const verificationToken = uuidv4();
+
   const user = await User.create({
     name,
     email: email.toLowerCase(),
     password,
-    phone,
+    // isEmailVerified: false
   });
+
+  // if (user) {
+  //   const emailVerification = new EmailVerification({
+  //     email,
+  //     token: verificationToken,
+  //   });
+  //   await emailVerification.save();
+
+  //   // Send verification email to the user
+  //   const verificationLink = `https://barterr.vercel.app/verify-email?token=${verificationToken}`;
+
+  //   const mailOptions = {
+  //     from: "barter99888@gmail.com", // Enter your email address
+  //     to: email,
+  //     subject: "Email Verification",
+  //     text: `Your verification Link is: ${verificationLink}`,
+  //   };
+
+  //   transporter.sendMail(mailOptions, (error, info) => {
+  //     if (error) {
+  //       console.log(error);
+  //       throw new Error("Failed to send verification email");
+  //     } else {
+  //       console.log("Email sent");
+  //     }
+  //   });
+  // }
 
   if (user) {
     res.status(201).json({
       _id: user._id,
       name: user.name,
       email: user.email,
-      phone: user.phone,
-      isAdmin: user.isAdmin,
       pic: "https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg",
       token: generateToken(user._id),
       followers: '0',
-      following: '0'
-        });
+      following: '0',
+      // isEmailVerified: user.isEmailVerified
+    });
   } else {
     res.status(400);
     throw new Error("User not found");
@@ -263,7 +300,7 @@ const getUserAbout = async (req, res) => {
 const someonesProfile = async (req, res) => {
   // const {userId} = req.body; // Assuming the user ID is sent in the request body
   const userId = req.query.userId;
-  const user = await User.findOne({_id: userId});
+  const user = await User.findOne({ _id: userId });
   console.log(userId);
   if (user) {
     res.json({
@@ -275,9 +312,10 @@ const someonesProfile = async (req, res) => {
     res.status(404).json({ error: 'User not found' });
   }
 };
+
 const anotherUser = async (req, res) => {
   const userId = req.query.userId;
-  const user = await User.findOne({_id: userId});
+  const user = await User.findOne({ _id: userId });
   console.log(userId);
   if (user) {
     res.json({

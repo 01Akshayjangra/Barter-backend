@@ -5,7 +5,7 @@ const { protect } = require("../middleware/authMiddleware");
 
 router.route('/').post(registerUser).get(protect,allUsers)
 router.post('/login',authUser);
-router.put('/profileImage',protect,profileImage);
+router.put('/profileImage',profileImage);
 
 
 router.get('/profile',protect,userProfile)
