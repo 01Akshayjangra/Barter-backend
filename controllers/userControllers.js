@@ -22,7 +22,7 @@ const cloudinary = require('../utils/cloudinary');
 //@route           POST /api/user/
 //@access          Public
 const registerUser = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, pic } = req.body;
 
   if (!name || !email || !password) {
     res.status(400);
@@ -36,53 +36,27 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new Error("User already exists");
   }
 
-  // Generate verification token
-  // const verificationToken = uuidv4();
-
   const user = await User.create({
     name,
     email: email.toLowerCase(),
     password,
-    // isEmailVerified: false
+    pic: {
+      public_id: 'default',
+      url: pic,
+    },
   });
 
-  // if (user) {
-  //   const emailVerification = new EmailVerification({
-  //     email,
-  //     token: verificationToken,
-  //   });
-  //   await emailVerification.save();
 
-  //   // Send verification email to the user
-  //   const verificationLink = `https://barterr.vercel.app/verify-email?token=${verificationToken}`;
-
-  //   const mailOptions = {
-  //     from: "barter99888@gmail.com", // Enter your email address
-  //     to: email,
-  //     subject: "Email Verification",
-  //     text: `Your verification Link is: ${verificationLink}`,
-  //   };
-
-  //   transporter.sendMail(mailOptions, (error, info) => {
-  //     if (error) {
-  //       console.log(error);
-  //       throw new Error("Failed to send verification email");
-  //     } else {
-  //       console.log("Email sent");
-  //     }
-  //   });
-  // }
 
   if (user) {
     res.status(201).json({
       _id: user._id,
       name: user.name,
       email: user.email,
-      pic: "https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg",
+      pic: user.pic,
       token: generateToken(user._id),
       followers: '0',
       following: '0',
-      // isEmailVerified: user.isEmailVerified
     });
   } else {
     res.status(400);
@@ -104,7 +78,6 @@ const authUser = asyncHandler(async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
-      isAdmin: user.isAdmin,
       pic: user.pic,
       token: generateToken(user._id),
     });
@@ -113,6 +86,61 @@ const authUser = asyncHandler(async (req, res) => {
     throw new Error("Invalid Email or Password");
   }
 });
+
+//@description     Authenticate user with Google
+//@route           POST /api/google-auth
+//@access          Public
+const googleAuth = async (req, res) => {
+  const { name, email, password, pic } = req.body;
+
+  try {
+    // Check if user already exists
+    let user = await User.findOne({ email });
+
+    if (user) {
+      // User exists, generate token and send it in the response
+      return res.json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        pic: user.pic,
+        token: generateToken(user._id),
+      });
+    }
+
+    // User does not exist, create a new user
+    user = new User({
+      name,
+      email,
+      password, // Store the Google providerData[0].uid as the password
+      pic: {
+        public_id: 'default',
+        url: pic,
+      },
+    });
+
+    // Hash the password
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(user.password, salt);
+
+    // Save the new user to the database
+    await user.save();
+
+    // Generate token and send it in the response
+    const token = generateToken(user._id);
+    res.status(201).json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      pic: user.pic,
+      token,
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+
 
 const userProfile = async (req, res) => {
 
@@ -327,6 +355,23 @@ const anotherUser = async (req, res) => {
     res.status(404).json({ error: 'User not found' });
   }
 };
+// Uinque name checking
+const uniqueName = async (req, res) => {
+  try {
+    const { name } = req.query;
+    const existingUser = await User.findOne({ name: { $regex: `^${name}$` } });
+
+    if (existingUser) {
+      return res.json({ available: false });
+    }
+
+    return res.json({ available: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 module.exports = {
   registerUser,
   authUser,
@@ -338,5 +383,7 @@ module.exports = {
   userAbout,
   getUserAbout,
   someonesProfile,
-  anotherUser
+  anotherUser,
+  uniqueName,
+  googleAuth
 };
