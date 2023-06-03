@@ -140,8 +140,6 @@ const googleAuth = async (req, res) => {
   }
 };
 
-
-
 const userProfile = async (req, res) => {
 
   const user = await User.findOne(req.user._id);
@@ -152,6 +150,7 @@ const userProfile = async (req, res) => {
       name: user.name,
       email: user.email,
       pic: user.pic,
+      banner: user.banner,
       // followers,
       // following,
       // token: generateToken(user._id),
@@ -180,9 +179,6 @@ const allUsers = asyncHandler(async (req, res) => {
   res.send(users);
 });
 
-// @desc    Add user to Group / Leave
-// @route   PUT /api/chat/groupadd
-// @access  Protected
 const profileImage = asyncHandler(async (req, res) => {
   const { pic } = req.body;
   try {
@@ -195,6 +191,32 @@ const profileImage = asyncHandler(async (req, res) => {
       req.user._id,
       {
         pic: {
+          public_id: result.public_id,
+          url: result.secure_url
+        }
+      })
+    res.status(201).json({
+      success: true,
+      user
+    })
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+const profileBanner = asyncHandler(async (req, res) => {
+  const { banner } = req.body;
+  try {
+    const result = await cloudinary.uploader.upload(banner, {
+      folder: "userBanners",
+    })
+    console.log(result)
+
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        banner: {
           public_id: result.public_id,
           url: result.secure_url
         }
@@ -378,6 +400,7 @@ module.exports = {
   userProfile,
   allUsers,
   profileImage,
+  profileBanner,
   followUser,
   unFollowUser,
   userAbout,

@@ -1,5 +1,5 @@
 const express = require('express');
-const { authUser, registerUser, userProfile, allUsers, profileImage, followUser,unFollowUser,anotherUser, userAbout, getUserAbout, uniqueName, someonesProfile, googleAuth} = require('../controllers/userControllers');
+const { authUser, registerUser, userProfile, allUsers, profileImage, profileBanner, followUser,unFollowUser,anotherUser, userAbout, getUserAbout, uniqueName, someonesProfile, googleAuth} = require('../controllers/userControllers');
 const router = express.Router();
 const { protect } = require("../middleware/authMiddleware");
 
@@ -7,7 +7,9 @@ router.route('/').post(registerUser).get(protect,allUsers)
 router.post('/login',authUser);
 
 router.post('/google-auth',googleAuth);
+
 router.put('/profileImage',protect,profileImage);
+router.put('/profileBanner',protect,profileBanner);
 
 
 router.get('/profile',protect,userProfile)

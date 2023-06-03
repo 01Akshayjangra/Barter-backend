@@ -28,6 +28,18 @@ const userSchema = new mongoose.Schema({
             required: true
         }
     },
+    banner: {
+        public_id: {
+            type: String,
+            default:"default",
+            required: true
+        },
+        url: {
+            type: String,
+            default:"https://res.cloudinary.com/dahj17ckh/image/upload/v1685803066/userAvatars/fo5uj4vfndq7ehdepw87.jpg",
+            required: true
+        }
+    },
     followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     // isEmailVerified: {
