@@ -31,20 +31,56 @@ const getSomeonesUserPosts = async (req, res) => {
   }
 };
 
-
 const getAllPosts = async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1; // Get the page number from the query parameter (default to 1 if not provided)
+    const limit = 24; // Number of posts to display per page
     const category = req.query.category || '';
-    const posts = await Post.find(category ? { category } : {}).populate({
-      path: 'userId',
-      select: 'name email pic'
-    })
-    res.json(posts);
+
+    // Calculate the skip value based on the page number and limit
+    const skip = (page - 1) * limit;
+
+    // Find the posts with pagination and populate the user data
+    const postsQuery = Post.find(category ? { category } : {})
+      .skip(skip)
+      .limit(limit)
+      .populate({
+        path: 'userId',
+        select: 'name email pic',
+      });
+
+    // Execute the query and get the total count of posts
+    const [posts, totalCount] = await Promise.all([
+      postsQuery.exec(),
+      Post.countDocuments(category ? { category } : {}),
+    ]);
+
+    const totalPages = Math.ceil(totalCount / limit); // Calculate the total number of pages
+
+    res.json({
+      posts,
+      currentPage: page,
+      totalPages,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server Error' });
   }
-}
+};
+
+// const getAllPosts = async (req, res) => {
+//   try {
+//     const category = req.query.category || '';
+//     const posts = await Post.find(category ? { category } : {}).populate({
+//       path: 'userId',
+//       select: 'name email pic'
+//     })
+//     res.json(posts);
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: 'Server Error' });
+//   }
+// }
 
 const createPost = async (req, res) => {
   const { title, description, image, tags, tools, category, avatar, hearts, views, shares } = req.body;
