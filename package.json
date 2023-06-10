@@ -19,6 +19,10 @@
     "express-async-handler": "^1.2.0",
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^7.1.0",
-    "nodemon": "^2.0.22"
+    "nodemailer": "^6.9.2",
+    "nodemon": "^2.0.22",
+    "otp-generator": "^4.0.1",
+    "socket.io": "^4.6.1",
+    "uuid": "^9.0.0"
   }
 }

@@ -3,20 +3,28 @@ const jwt = require("jsonwebtoken");
 const User = require('../models/userModel')
 const Post = require('../models/postModel')
 const About = require('../models/aboutModel')
+const EmailVerification = require("../models/EmailVerification")
 const asyncHandler = require("express-async-handler");
 const generateToken = require("../config/generateToken");
 const cloudinary = require('../utils/cloudinary');
+// const { v4: uuidv4 } = require("uuid");
+// const nodemailer = require("nodemailer");
 
-//@description     Register new user 
+// const transporter = nodemailer.createTransport({
+//   service: "Gmail", // Specify your email service provider
+//   auth: {
+//     user: "barter99888@gmail.com", // Enter your email address
+//     pass: "BarterGoogle@2002", // Enter your email password
+//   },
+// });
+
+//@description Register new user 
 //@route           POST /api/user/
 //@access          Public
 const registerUser = asyncHandler(async (req, res) => {
-  const { name, email, phone, password } = req.body;
-console.log(name)
-console.log(email)
-console.log(phone)
-console.log(password)
-  if (!name || !phone || !email || !password) {
+  const { name, email, password, pic } = req.body;
+
+  if (!name || !email || !password) {
     res.status(400);
     throw new Error("Please Enter all the Feilds");
   }
@@ -32,21 +40,24 @@ console.log(password)
     name,
     email: email.toLowerCase(),
     password,
-    phone,
+    pic: {
+      public_id: 'default',
+      url: pic,
+    },
   });
+
+
 
   if (user) {
     res.status(201).json({
       _id: user._id,
       name: user.name,
       email: user.email,
-      phone: user.phone,
-      isAdmin: user.isAdmin,
-      pic: "https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg",
+      pic: user.pic,
       token: generateToken(user._id),
       followers: '0',
-      following: '0'
-        });
+      following: '0',
+    });
   } else {
     res.status(400);
     throw new Error("User not found");
@@ -67,7 +78,6 @@ const authUser = asyncHandler(async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
-      isAdmin: user.isAdmin,
       pic: user.pic,
       token: generateToken(user._id),
     });
@@ -76,6 +86,59 @@ const authUser = asyncHandler(async (req, res) => {
     throw new Error("Invalid Email or Password");
   }
 });
+
+//@description     Authenticate user with Google
+//@route           POST /api/google-auth
+//@access          Public
+const googleAuth = async (req, res) => {
+  const { name, email, password, pic } = req.body;
+
+  try {
+    // Check if user already exists
+    let user = await User.findOne({ email });
+
+    if (user) {
+      // User exists, generate token and send it in the response
+      return res.json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        pic: user.pic,
+        token: generateToken(user._id),
+      });
+    }
+
+    // User does not exist, create a new user
+    user = new User({
+      name,
+      email,
+      password, // Store the Google providerData[0].uid as the password
+      pic: {
+        public_id: 'default',
+        url: pic,
+      },
+    });
+
+    // Hash the password
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(user.password, salt);
+
+    // Save the new user to the database
+    await user.save();
+
+    // Generate token and send it in the response
+    const token = generateToken(user._id);
+    res.status(201).json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      pic: user.pic,
+      token,
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+};
 
 const userProfile = async (req, res) => {
 
@@ -87,6 +150,7 @@ const userProfile = async (req, res) => {
       name: user.name,
       email: user.email,
       pic: user.pic,
+      banner: user.banner,
       // followers,
       // following,
       // token: generateToken(user._id),
@@ -115,9 +179,6 @@ const allUsers = asyncHandler(async (req, res) => {
   res.send(users);
 });
 
-// @desc    Add user to Group / Leave
-// @route   PUT /api/chat/groupadd
-// @access  Protected
 const profileImage = asyncHandler(async (req, res) => {
   const { pic } = req.body;
   try {
@@ -130,6 +191,32 @@ const profileImage = asyncHandler(async (req, res) => {
       req.user._id,
       {
         pic: {
+          public_id: result.public_id,
+          url: result.secure_url
+        }
+      })
+    res.status(201).json({
+      success: true,
+      user
+    })
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+const profileBanner = asyncHandler(async (req, res) => {
+  const { banner } = req.body;
+  try {
+    const result = await cloudinary.uploader.upload(banner, {
+      folder: "userBanners",
+    })
+    console.log(result)
+
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        banner: {
           public_id: result.public_id,
           url: result.secure_url
         }
@@ -263,7 +350,7 @@ const getUserAbout = async (req, res) => {
 const someonesProfile = async (req, res) => {
   // const {userId} = req.body; // Assuming the user ID is sent in the request body
   const userId = req.query.userId;
-  const user = await User.findOne({_id: userId});
+  const user = await User.findOne({ _id: userId });
   console.log(userId);
   if (user) {
     res.json({
@@ -275,9 +362,10 @@ const someonesProfile = async (req, res) => {
     res.status(404).json({ error: 'User not found' });
   }
 };
+
 const anotherUser = async (req, res) => {
   const userId = req.query.userId;
-  const user = await User.findOne({_id: userId});
+  const user = await User.findOne({ _id: userId });
   console.log(userId);
   if (user) {
     res.json({
@@ -289,16 +377,36 @@ const anotherUser = async (req, res) => {
     res.status(404).json({ error: 'User not found' });
   }
 };
+// Uinque name checking
+const uniqueName = async (req, res) => {
+  try {
+    const { name } = req.query;
+    const existingUser = await User.findOne({ name: { $regex: `^${name}$` } });
+
+    if (existingUser) {
+      return res.json({ available: false });
+    }
+
+    return res.json({ available: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 module.exports = {
   registerUser,
   authUser,
   userProfile,
   allUsers,
   profileImage,
+  profileBanner,
   followUser,
   unFollowUser,
   userAbout,
   getUserAbout,
   someonesProfile,
-  anotherUser
+  anotherUser,
+  uniqueName,
+  googleAuth
 };
