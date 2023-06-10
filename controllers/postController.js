@@ -34,7 +34,7 @@ const getSomeonesUserPosts = async (req, res) => {
 const getAllPosts = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1; // Get the page number from the query parameter (default to 1 if not provided)
-    const limit = 24; // Number of posts to display per page
+    const limit = 200; // Number of posts to display per page
     const category = req.query.category || '';
 
     // Calculate the skip value based on the page number and limit
@@ -67,20 +67,6 @@ const getAllPosts = async (req, res) => {
     res.status(500).json({ message: 'Server Error' });
   }
 };
-
-// const getAllPosts = async (req, res) => {
-//   try {
-//     const category = req.query.category || '';
-//     const posts = await Post.find(category ? { category } : {}).populate({
-//       path: 'userId',
-//       select: 'name email pic'
-//     })
-//     res.json(posts);
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ message: 'Server Error' });
-//   }
-// }
 
 const createPost = async (req, res) => {
   const { title, description, image, tags, tools, category, avatar, hearts, views, shares } = req.body;
@@ -151,20 +137,20 @@ const deletePost = async (req, res) => {
 }
 
 // Like a post
-const likePost = async (req, res) => {
-  const { postId } = req.body;
-  try {
-    const post = await Post.findByIdAndUpdate(
-      postId,
-      { $inc: { hearts: 1 } },
-      { new: true }
-    );
-    res.json(post);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
-  }
-}
+// const likePost = async (req, res) => {
+//   const { postId } = req.body;
+//   try {
+//     const post = await Post.findByIdAndUpdate(
+//       postId,
+//       { $inc: { hearts: 1 } },
+//       { new: true }
+//     );
+//     res.json(post);
+//   } catch (err) {
+//     console.error(err.message);
+//     res.status(500).send('Server error');
+//   }
+// }
 // Unlike a post
 const unlikePost = async (req, res) => {
   const { postId } = req.body;
@@ -210,6 +196,66 @@ const getRecommendations = (req, res) => {
     });
 }
 
+
+// Like a post
+const likePost = async (req, res) => {
+
+  const { postId } = req.body;
+  const userId = req.user._id; // Assuming you have user authentication middleware
+  console.log('postId', postId)
+  console.log(userId)
+  try {
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    const likedIndex = post.hearts.indexOf(userId);
+
+    if (likedIndex === -1) {
+      // User has not liked the post, add their ID to likes array
+      post.hearts.push(userId);
+    } else {
+      // User has liked the post, remove their ID from likes array
+      post.hearts.splice(likedIndex, 1);
+    }
+
+    await post.save();
+    res.status(200).json({ message: 'Like toggled successfully' });
+  } catch (error) {
+    console.error('Error toggling like:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// Route to check if a user liked a post and retrieve likes and views
+const checkLikes = async (req, res) => {
+  try {
+  
+    const { postId } = req.params;
+    const userId = req.user._id;
+    console.log(postId)
+    console.log(userId)
+
+    // Find the post by ID
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    // Check if the user liked the post
+    const liked = post.hearts.includes(userId);
+
+    // Return the likes and views count along with the liked status
+    res.json({ liked, likeCount: post.hearts.length, viewCount: post.views.length });
+  } catch (error) {
+    console.error('Error checking likes and views:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 module.exports = {
   getAllPosts,
   getUserPosts,
@@ -219,6 +265,7 @@ module.exports = {
   sharePost,
   deletePost,
   getSomeonesUserPosts,
-  getRecommendations
+  getRecommendations,
+  checkLikes
   // postRecommendations
 };

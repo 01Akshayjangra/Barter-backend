@@ -31,9 +31,9 @@ const postSchema = new mongoose.Schema({
         type: Array,
         default: []
     },
-    hearts: { type: Number, default: 0 },
-    views: { type: Number, default: 0 },
-    shares: { type: Number, default: 0 },
+    hearts: { type: Array, default: 0 },
+    views: { type: Array, default: 0 },
+    shares: { type: Array, default: 0 },
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
