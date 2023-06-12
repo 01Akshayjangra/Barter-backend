@@ -10,15 +10,15 @@ const postSchema = new mongoose.Schema({
         required: true,
     },
     image: {
-       public_id: {
-           type: String,
-           required: true
-       },
-       url: {
-           type: String,
-           required: true
-       }
-   },
+        public_id: {
+            type: String,
+            required: true
+        },
+        url: {
+            type: String,
+            required: true
+        }
+    },
     tags: {
         type: Array,
         default: []
@@ -37,8 +37,10 @@ const postSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
-    }
-})
+    },
+},
+    { timestamps: true }
+)
 
 const Post = mongoose.model('Post', postSchema);
 module.exports = Post;

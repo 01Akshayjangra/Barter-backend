@@ -36,25 +36,43 @@ const getAllPosts = async (req, res) => {
     const page = parseInt(req.query.page) || 1; // Get the page number from the query parameter (default to 1 if not provided)
     const limit = 36; // Number of posts to display per page
     const category = req.query.category || '';
+    const sort = req.query.sort || 'shuffle'; // Default to 'shuffle' if no sort value is provided
 
     // Calculate the skip value based on the page number and limit
     const skip = (page - 1) * limit;
 
-    // Find the posts with pagination and populate the user data
+    // Find all posts and populate the user data
     const postsQuery = Post.find(category ? { category } : {})
-      .skip(skip)
-      .limit(limit)
-      .populate({
-        path: 'userId',
-        select: 'name email pic',
-      });
+      .populate('userId', 'name email pic')
+      .select('_id title description image tags tools category hearts views shares createdAt')
+      .lean();
 
-    // Execute the query and get the total count of posts
-    const [posts, totalCount] = await Promise.all([
-      postsQuery.exec(),
-      Post.countDocuments(category ? { category } : {}),
-    ]);
+    // Execute the query and get all the posts
+    let posts = await postsQuery.exec();
 
+    // Calculate the hearts count for each post
+    posts = posts.map(post => ({
+      ...post,
+      heartsCount: post.hearts.length
+    }));
+
+    // Define the sort options based on the 'sort' query parameter
+    if (sort === 'hearts') {
+      posts.sort((a, b) => b.heartsCount - a.heartsCount);
+    } else if (sort === 'views') {
+      posts.sort((a, b) => b.views - a.views);
+    } else if (sort === 'latest') {
+      posts.sort((a, b) => b.createdAt - a.createdAt);
+    } else if (sort === 'oldest') {
+      posts.sort((a, b) => a.createdAt - b.createdAt);
+    } else if (sort === 'shuffle') {
+      shuffleArray(posts);
+    }
+
+    // Paginate the posts
+    posts = posts.slice(skip, skip + limit);
+
+    const totalCount = await Post.countDocuments(category ? { category } : {});
     const totalPages = Math.ceil(totalCount / limit); // Calculate the total number of pages
 
     res.json({
@@ -67,6 +85,16 @@ const getAllPosts = async (req, res) => {
     res.status(500).json({ message: 'Server Error' });
   }
 };
+
+
+// Function to shuffle an array using Fisher-Yates algorithm
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
 
 const createPost = async (req, res) => {
   const { title, description, image, tags, tools, category, avatar, hearts, views, shares } = req.body;
