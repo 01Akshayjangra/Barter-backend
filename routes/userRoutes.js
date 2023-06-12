@@ -1,5 +1,5 @@
 const express = require('express');
-const { authUser, registerUser, userProfile, allUsers, profileImage, profileBanner, followUser,unFollowUser,anotherUser, userAbout, getUserAbout, uniqueName, someonesProfile, googleAuth} = require('../controllers/userControllers');
+const { authUser, registerUser, userProfile, allUsers, profileImage, profileBanner, followUser,unFollowUser,anotherUser, userAbout, getUserAbout, uniqueName, googleAuth, CheckFollow} = require('../controllers/userControllers');
 const router = express.Router();
 const { protect } = require("../middleware/authMiddleware");
 
@@ -13,11 +13,14 @@ router.put('/profileBanner',protect,profileBanner);
 
 
 router.get('/profile',protect,userProfile)
-router.post('/follow',protect,followUser)
-router.post('/unfollow',protect,unFollowUser)
+
+router.put('/follow/:userId', protect,followUser)
+router.put('/unfollow/:userId', protect,unFollowUser)
+
+router.get('/CheckFollow/:userId', protect,CheckFollow)
+
 router.post('/about',protect,userAbout)
 router.get('/about',protect,getUserAbout)
-router.get('/someonesProfile',someonesProfile)
 
 router.get('/check-unique-name',uniqueName);
 

@@ -34,7 +34,7 @@ const getSomeonesUserPosts = async (req, res) => {
 const getAllPosts = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1; // Get the page number from the query parameter (default to 1 if not provided)
-    const limit = 200; // Number of posts to display per page
+    const limit = 36; // Number of posts to display per page
     const category = req.query.category || '';
 
     // Calculate the skip value based on the page number and limit
@@ -136,21 +136,6 @@ const deletePost = async (req, res) => {
   }
 }
 
-// Like a post
-// const likePost = async (req, res) => {
-//   const { postId } = req.body;
-//   try {
-//     const post = await Post.findByIdAndUpdate(
-//       postId,
-//       { $inc: { hearts: 1 } },
-//       { new: true }
-//     );
-//     res.json(post);
-//   } catch (err) {
-//     console.error(err.message);
-//     res.status(500).send('Server error');
-//   }
-// }
 // Unlike a post
 const unlikePost = async (req, res) => {
   const { postId } = req.body;
@@ -235,8 +220,8 @@ const checkLikes = async (req, res) => {
   
     const { postId } = req.params;
     const userId = req.user._id;
-    console.log(postId)
-    console.log(userId)
+    // console.log(postId)
+    // console.log(userId)
 
     // Find the post by ID
     const post = await Post.findById(postId);
@@ -249,9 +234,29 @@ const checkLikes = async (req, res) => {
     const liked = post.hearts.includes(userId);
 
     // Return the likes and views count along with the liked status
-    res.json({ liked, likeCount: post.hearts.length, viewCount: post.views.length });
+    res.json({ liked, likeCount: post.hearts.length, viewCount: post.views });
   } catch (error) {
     console.error('Error checking likes and views:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+
+// Add post view
+const viewPost = async (req, res) => {
+  const { postId } = req.body;
+
+  try {
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+    post.views += 1;
+    await post.save();
+    res.status(200).json({ message: 'View added successfully' });
+  } catch (error) {
+    console.error('Error adding view:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -266,6 +271,7 @@ module.exports = {
   deletePost,
   getSomeonesUserPosts,
   getRecommendations,
-  checkLikes
+  checkLikes,
+  viewPost
   // postRecommendations
 };

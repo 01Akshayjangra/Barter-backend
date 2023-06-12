@@ -42,10 +42,10 @@ const userSchema = new mongoose.Schema({
     },
     followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-    // isEmailVerified: {
-    //     type: Boolean,
-    //     default: false,
-    //   },
+    postId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Post'
+    }
 },{
     timestamps: true,
 }

@@ -32,7 +32,7 @@ const postSchema = new mongoose.Schema({
         default: []
     },
     hearts: { type: Array, default: 0 },
-    views: { type: Array, default: 0 },
+    views: { type: Number, default: 0 },
     shares: { type: Array, default: 0 },
     userId: {
         type: mongoose.Schema.Types.ObjectId,
