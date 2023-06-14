@@ -10,6 +10,7 @@ router.get('/posts',getAllPosts);
 router.post('/post',protect,createPost)
 
 router.post('/posts/like',protect,likePost)
+
 router.get('/posts/checkLikes/:postId',protect,checkLikes)
 router.post('/posts/view',viewPost)
 // router.put('/share',pr/otect,sharePost)
