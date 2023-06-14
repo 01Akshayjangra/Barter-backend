@@ -157,7 +157,7 @@ const userProfile = async (req, res) => {
     ];
 
     const userStats = await Post.aggregate(pipeline);
-    console.log(userStats)
+    // console.log("userStats",userStats)
 
     if (userStats.length === 0) {
       res.status(404).json({ message: "User not found" });
