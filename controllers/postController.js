@@ -262,7 +262,7 @@ const checkLikes = async (req, res) => {
     const liked = post.hearts.includes(userId);
 
     // Return the likes and views count along with the liked status
-    console.log(liked, 'likeCount:' ,post.hearts.length, 'viewCount:', post.views);
+    // console.log(liked, 'likeCount:' ,post.hearts.length, 'viewCount:', post.views);
     res.json({ 
       liked, 
       likeCount: post.hearts.length, 

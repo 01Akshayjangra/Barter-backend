@@ -143,6 +143,7 @@ const googleAuth = async (req, res) => {
 const userProfile = async (req, res) => {
   try {
     const userId = req.user._id;
+    console.log("testing issues", userId);
 
     // Calculate total likes and views using aggregation pipeline
     const pipeline = [
@@ -151,29 +152,32 @@ const userProfile = async (req, res) => {
         $group: {
           _id: null,
           totalLikes: { $sum: { $size: "$hearts" } },
-          totalViews: { $sum: "$views"  },
+          totalViews: { $sum: "$views" },
         },
       },
     ];
 
     const userStats = await Post.aggregate(pipeline);
-    // console.log("userStats",userStats)
 
-    if (userStats.length === 0) {
-      res.status(404).json({ message: "User not found" });
-      return;
+    let totalLikes = 0;
+    let totalViews = 0;
+
+    if (userStats.length > 0) {
+      totalLikes = userStats[0].totalLikes;
+      totalViews = userStats[0].totalViews;
     }
 
     const user = await User.findById(userId);
 
+    console.log("user ---->>> ", user);
     if (user) {
       res.json({
         name: user.name,
         email: user.email,
         pic: user.pic,
         banner: user.banner,
-        totalLikes: userStats[0].totalLikes || 0,
-        totalViews: userStats[0].totalViews || 0,
+        totalLikes: totalLikes,
+        totalViews: totalViews,
       });
     } else {
       res.status(401).json({ message: "Invalid Email or Password" });
@@ -183,6 +187,7 @@ const userProfile = async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 };
+
 
 
 //@description     Get or Search all users
