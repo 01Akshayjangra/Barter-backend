@@ -7,20 +7,7 @@ const EmailVerification = require("../models/EmailVerification")
 const asyncHandler = require("express-async-handler");
 const generateToken = require("../config/generateToken");
 const cloudinary = require('../utils/cloudinary');
-// const { v4: uuidv4 } = require("uuid");
-// const nodemailer = require("nodemailer");
 
-// const transporter = nodemailer.createTransport({
-//   service: "Gmail", // Specify your email service provider
-//   auth: {
-//     user: "barter99888@gmail.com", // Enter your email address
-//     pass: "BarterGoogle@2002", // Enter your email password
-//   },
-// });
-
-//@description Register new user 
-//@route           POST /api/user/
-//@access          Public
 const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password, pic } = req.body;
 
@@ -65,9 +52,6 @@ const registerUser = asyncHandler(async (req, res) => {
 });
 
 
-//@description     Auth the user
-//@route           POST /api/users/login
-//@access          Public
 const authUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
@@ -87,9 +71,7 @@ const authUser = asyncHandler(async (req, res) => {
   }
 });
 
-//@description     Authenticate user with Google
-//@route           POST /api/google-auth
-//@access          Public
+
 const googleAuth = async (req, res) => {
   const { name, email, password, pic } = req.body;
 
@@ -178,6 +160,8 @@ const userProfile = async (req, res) => {
         banner: user.banner,
         totalLikes: totalLikes,
         totalViews: totalViews,
+        followers: user.followers.length,
+        following: user.following.length
       });
     } else {
       res.status(401).json({ message: "Invalid Email or Password" });
@@ -188,11 +172,50 @@ const userProfile = async (req, res) => {
   }
 };
 
+const anotherUser = async (req, res) => {
+  try {
+    const userId = req.query.userId;
+    const user = await User.findOne({ _id: userId });
 
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
 
-//@description     Get or Search all users
-//@route           GET /api/user?search=
-//@access          Public
+    const pipeline = [
+      { $match: { userId: user._id } },
+      {
+        $group: {
+          _id: null,
+          totalLikes: { $sum: { $size: "$hearts" } },
+          totalViews: { $sum: "$views" },
+        },
+      },
+    ];
+
+    const userStats = await Post.aggregate(pipeline);
+
+    if (userStats.length === 0) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    res.json({
+      name: user.name,
+      email: user.email,
+      pic: user.pic,
+      banner: user.banner,
+      totalLikes: userStats[0].totalLikes || 0,
+      totalViews: userStats[0].totalViews || 0,
+      followers: user.followers.length,
+      following: user.following.length
+    });
+  } catch (error) {
+    console.error("Error retrieving user data:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
 const allUsers = asyncHandler(async (req, res) => {
 
   const keyword = req.query.search ? {
@@ -259,7 +282,6 @@ const profileBanner = asyncHandler(async (req, res) => {
   }
 });
 
-// Follow a user
 const followUser = async (req, res) => {
   try {
     const userToFollow = await User.findById(req.params.userId);
@@ -290,7 +312,6 @@ const followUser = async (req, res) => {
   }
 };
 
-// Unfollow a user
 const unFollowUser = async (req, res) => {
   try {
     const userToUnfollow = await User.findById(req.params.userId);
@@ -364,7 +385,6 @@ const userAbout = async (req, res) => {
   }
 };
 
-// Route to fetch user about data -- api/user/about
 const getUserAbout = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -383,51 +403,6 @@ const getUserAbout = async (req, res) => {
   }
 };
 
-// Routes ------------- For user whose profile is viewed by someone
-
-const anotherUser = async (req, res) => {
-  try {
-    const userId = req.query.userId;
-    const user = await User.findOne({ _id: userId });
-
-    if (!user) {
-      res.status(404).json({ error: 'User not found' });
-      return;
-    }
-
-    const pipeline = [
-      { $match: { userId: user._id } },
-      {
-        $group: {
-          _id: null,
-          totalLikes: { $sum: { $size: "$hearts" } },
-          totalViews: { $sum: "$views" },
-        },
-      },
-    ];
-
-    const userStats = await Post.aggregate(pipeline);
-
-    if (userStats.length === 0) {
-      res.status(404).json({ message: "User not found" });
-      return;
-    }
-
-    res.json({
-      name: user.name,
-      email: user.email,
-      pic: user.pic,
-      banner: user.banner,
-      totalLikes: userStats[0].totalLikes || 0,
-      totalViews: userStats[0].totalViews || 0,
-    });
-  } catch (error) {
-    console.error("Error retrieving user data:", error);
-    res.status(500).json({ message: "Server Error" });
-  }
-};
-
-// Uinque name checking
 const uniqueName = async (req, res) => {
   try {
     const { name } = req.query;
@@ -443,6 +418,7 @@ const uniqueName = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
 const CheckFollow = async (req, res) => {
   try {
     const targetUserId = req.params.userId;
@@ -456,6 +432,7 @@ const CheckFollow = async (req, res) => {
     res.status(500).json({ message: 'Server Error' });
   }
 };
+
 module.exports = {
   registerUser,
   authUser,

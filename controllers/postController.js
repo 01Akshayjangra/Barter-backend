@@ -86,15 +86,12 @@ const getAllPosts = async (req, res) => {
   }
 };
 
-
-// Function to shuffle an array using Fisher-Yates algorithm
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [array[i], array[j]] = [array[j], array[i]];
   }
 }
-
 
 const createPost = async (req, res) => {
   const { title, description, image, tags, tools, category, avatar, hearts, views, shares } = req.body;
@@ -164,7 +161,6 @@ const deletePost = async (req, res) => {
   }
 }
 
-// Unlike a post
 const unlikePost = async (req, res) => {
   const { postId } = req.body;
   try {
@@ -180,7 +176,6 @@ const unlikePost = async (req, res) => {
   }
 }
 
-// Share a post
 const sharePost = async (req, res) => {
   const { postId } = req.body;
   try {
@@ -209,8 +204,6 @@ const getRecommendations = (req, res) => {
     });
 }
 
-
-// Like a post
 const likePost = async (req, res) => {
 
   const { postId } = req.body;
@@ -242,7 +235,6 @@ const likePost = async (req, res) => {
   }
 };
 
-// Route to check if a user liked a post and retrieve likes and views
 const checkLikes = async (req, res) => {
   try {
   
@@ -274,8 +266,6 @@ const checkLikes = async (req, res) => {
   }
 };
 
-
-// Add post view
 const viewPost = async (req, res) => {
   const { postId } = req.body;
 
