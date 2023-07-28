@@ -96,7 +96,7 @@ function shuffleArray(array) {
 const createPost = async (req, res) => {
   const { title, description, image, tags, tools, category, avatar, hearts, views, shares } = req.body;
   try {
-    console.log(image)
+    // console.log(image)
     const result = await cloudinary.uploader.upload(image, {
       folder: "allPosts",
     })
