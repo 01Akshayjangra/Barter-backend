@@ -30,7 +30,7 @@ app.use("/api/chat", chatRoutes);
 app.use("/api/message", messageRoutes);
 
 
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 6500;
 const server = app.listen(port, () => {
   console.log(`The server is running at localhost:${port}`)
 })
